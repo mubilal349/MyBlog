@@ -10,11 +10,12 @@ import Hero from "./components/Hero";
 import About from "./components/About";
 import Login from "./pages/Login";
 import BackToTop from "./components/common/BackToTop";
+import Categories from "./pages/Categories";
+import { AuthProvider } from "./context/AuthContext"; // Import AuthProvider
 
 const Layout = () => {
-  const location = useLocation(); // Triggered the current URL/location of your app
+  const location = useLocation();
 
-  // Hide Navbar + About only on /login
   const hideLayout = location.pathname === "/login";
 
   return (
@@ -23,6 +24,7 @@ const Layout = () => {
       <Routes>
         <Route path="/" element={<Hero />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/categories" element={<Categories />} />
       </Routes>
       {!hideLayout && <About />}
     </div>
@@ -31,14 +33,15 @@ const Layout = () => {
 
 const App = () => {
   return (
-    <>
+    <AuthProvider>
+      {" "}
       <div>
         <Router>
           <Layout />
         </Router>
         <BackToTop />
       </div>
-    </>
+    </AuthProvider>
   );
 };
 

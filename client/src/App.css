@@ -1,0 +1,35 @@
+@import "slick-carousel/slick/slick.css";
+@import "slick-carousel/slick/slick-theme.css";
+
+/* Theme Variables */
+:root {
+  --bg-color: #ffffff;
+  --text-color: #1a1a1a;
+  --nav-bg: #f8f9fa;
+  --nav-scrolled-bg: #ffffff;
+  --input-bg: #ffffff;
+  --input-text: #1a1a1a;
+  --input-border: #e2e8f0;
+  --dropdown-bg: #ffffff;
+  --dropdown-text: #1a1a1a;
+  --dropdown-hover: #f1f5f9;
+}
+
+[data-theme="dark"] {
+  --bg-color: #0f172a;
+  --text-color: #e2e8f0;
+  --nav-bg: #111827;
+  --nav-scrolled-bg: #1e293b;
+  --input-bg: #1e293b;
+  --input-text: #e2e8f0;
+  --input-border: #334155;
+  --dropdown-bg: #1e293b;
+  --dropdown-text: #e2e8f0;
+  --dropdown-hover: #334155;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
