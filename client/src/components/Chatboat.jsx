@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
 import { Send, Bot, User } from "lucide-react";
 
-const socket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:5000");
+const socket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:5001");
 
 const Chatbot = () => {
   const [messages, setMessages] = useState([]);

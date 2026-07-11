@@ -1,5 +1,7 @@
 import express from "express";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
+import axios from "axios";
 import dotenv from "dotenv";
 import http from "http";
 import { Server } from "socket.io";
@@ -100,10 +102,8 @@ app.post("/login", async (req, res) => {
 
 // Initialize Gemini AI
 let genAI = null;
-if (
-  process.env.GEMINI_API_KEY &&
-  process.env.GEMINI_API_KEY !== "your_gemini_api_key_here"
-) {
+
+if (process.env.GEMINI_API_KEY) {
   try {
     genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     console.log("Gemini AI initialized successfully");
@@ -112,9 +112,7 @@ if (
     genAI = null;
   }
 } else {
-  console.warn(
-    "GEMINI_API_KEY not found or is placeholder. Using fallback responses."
-  );
+  console.warn("GEMINI_API_KEY not found. Using fallback responses.");
 }
 
 // Chat history
@@ -148,19 +146,36 @@ function generateFallbackResponse(userMessage) {
 }
 
 // Generate bot reply
+
 async function generateBotReply(message) {
-  if (!genAI) {
-    return generateFallbackResponse(message);
-  }
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-    const prompt = `You are a helpful AI assistant. Respond to: "${message}"`;
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return response.text();
+    const response = await axios.post(
+      "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta",
+      {
+        inputs: message,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+        },
+      },
+    );
+
+    const result = response.data;
+
+    // HuggingFace returns different formats sometimes
+    if (Array.isArray(result)) {
+      return result[0]?.generated_text || "I couldn't generate a response.";
+    }
+
+    if (result.generated_text) {
+      return result.generated_text;
+    }
+
+    return "No response from AI.";
   } catch (err) {
-    console.error("Gemini API error:", err.message);
-    return generateFallbackResponse(message);
+    console.error("HuggingFace Error:", err.message);
+    return "AI service error. Try again later.";
   }
 }
 
@@ -258,8 +273,8 @@ app.get("/test-gemini", async (req, res) => {
 });
 
 // ================== START SERVER ==================
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`Gemini API: ${genAI ? "Available" : "Not available"}`);
+  console.log(`OpenAI API: ${genAI ? "Available" : "Not available"}`);
 });
