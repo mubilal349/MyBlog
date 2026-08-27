@@ -45,7 +45,13 @@ const Login = () => {
     setLoading(false);
 
     if (result.success) {
-      navigate("/");
+      console.log("LOGIN RESULT:", result);
+      console.log("USER ROLE:", result.user?.role);
+      if (result.user?.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
     } else {
       setMessage(result.message);
     }

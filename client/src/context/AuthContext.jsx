@@ -11,90 +11,157 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // ==========================================
+  // RESTORE AUTHENTICATION ON PAGE REFRESH
+  // ==========================================
   useEffect(() => {
-    // Check if user is logged in on app load
-    const token = localStorage.getItem("token");
-    if (token) {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      getUserProfile();
-    } else {
-      setLoading(false);
-    }
+    const restoreUser = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+        const response = await axios.get(
+          "http://localhost:5001/api/auth/profile",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        console.log("PROFILE RESPONSE:", response.data);
+
+        // Supports both:
+        // response.data = user
+        // response.data = { user: user }
+        const currentUser = response.data.user || response.data;
+
+        console.log("RESTORED USER:", currentUser);
+
+        setUser(currentUser);
+      } catch (error) {
+        console.error(
+          "PROFILE ERROR:",
+          error.response?.status,
+          error.response?.data || error.message,
+        );
+
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          localStorage.removeItem("token");
+          delete axios.defaults.headers.common["Authorization"];
+          setUser(null);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    restoreUser();
   }, []);
 
-  const getUserProfile = async () => {
-    try {
-      const response = await axios.get(
-        "http://localhost:5000/api/auth/profile"
-      );
-      setUser(response.data);
-    } catch (error) {
-      console.error("Error getting user profile", error);
-      logout();
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // ==========================================
+  // REGISTER
+  // ==========================================
   const register = async (userData) => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/auth/register",
-        userData
+        "http://localhost:5001/api/auth/register",
+        userData,
       );
-      const { token, ...user } = response.data;
+
+      const { token, user } = response.data;
 
       localStorage.setItem("token", token);
+
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
       setUser(user);
 
-      return { success: true };
+      return {
+        success: true,
+        user,
+      };
     } catch (error) {
+      console.error("Registration error:", error);
+
       return {
         success: false,
-        message: error.response?.data?.message || "Registration failed",
+        message:
+          error.response?.data?.error ||
+          error.response?.data?.message ||
+          "Registration failed",
       };
     }
   };
 
+  // ==========================================
+  // LOGIN
+  // ==========================================
   const login = async (credentials) => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/auth/login",
-        credentials
+        "http://localhost:5001/api/auth/login",
+        credentials,
       );
-      const { token, ...user } = response.data;
 
+      const { token, user } = response.data;
+
+      // Save token
       localStorage.setItem("token", token);
+
+      // Set axios token
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+      // Set user
       setUser(user);
 
-      return { success: true };
+      console.log("Login successful:", user);
+
+      return {
+        success: true,
+        user,
+      };
     } catch (error) {
+      console.error("Login error:", error);
+
       return {
         success: false,
-        message: error.response?.data?.message || "Login failed",
+        message:
+          error.response?.data?.error ||
+          error.response?.data?.message ||
+          "Login failed",
       };
     }
   };
 
+  // ==========================================
+  // LOGOUT
+  // ==========================================
   const logout = () => {
     localStorage.removeItem("token");
+
     delete axios.defaults.headers.common["Authorization"];
+
     setUser(null);
   };
 
+  // ==========================================
+  // CONTEXT VALUE
+  // ==========================================
   const value = {
     user,
+    setUser,
     register,
     login,
     logout,
     loading,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {!loading && children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { Link, Routes, Route } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import {
   Home,
   FileText,
@@ -11,380 +11,509 @@ import {
   Edit,
   Trash2,
   Search,
+  Sun,
+  Moon,
+  X,
+  Check,
 } from "lucide-react";
+import "./adminDashboard.css";
 
+// =========================
+// THEME HOOK
+// =========================
+// Persists to localStorage and falls back to the OS preference on first load.
+const useTheme = () => {
+  const [theme, setTheme] = useState(() => {
+    const saved = localStorage.getItem("admin-theme");
+    if (saved) return saved;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-admin-theme", theme);
+    localStorage.setItem("admin-theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
+
+  return { theme, toggleTheme };
+};
+
+// =========================
+// STAMP BADGE (signature UI element)
+// =========================
+const Stamp = ({ status }) => (
+  <span className={`stamp stamp-${status?.toLowerCase()}`}>{status}</span>
+);
+
+// =========================
+// ADMIN DASHBOARD SHELL
+// =========================
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
-  const [active, setActive] = useState("overview");
+  // const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
 
   const menuItems = [
     { name: "Overview", path: "overview", icon: Home },
-    { name: "Manage Posts", path: "posts", icon: FileText },
-    { name: "Manage Users", path: "users", icon: Users },
-    { name: "Manage Comments", path: "comments", icon: MessageSquare },
+    { name: "Manage posts", path: "posts", icon: FileText },
+    { name: "Manage users", path: "users", icon: Users },
+    { name: "Manage comments", path: "comments", icon: MessageSquare },
   ];
 
-  return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white shadow-md flex flex-col">
-        <div className="p-4 border-b">
-          <h1 className="text-xl font-bold text-blue-600">Admin</h1>
-          <p className="text-sm text-gray-500">Welcome, {user?.username}</p>
-        </div>
-        <nav className="flex-1 p-2">
-          {menuItems.map((item) => (
-            <Link
-              key={item.name}
-              to={item.path}
-              onClick={() => setActive(item.path)}
-              className={`flex items-center px-3 py-2 mt-2 rounded-lg ${
-                active === item.path
-                  ? "bg-blue-100 text-blue-700"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              <item.icon className="w-5 h-5" />
-              <span className="ml-3">{item.name}</span>
-            </Link>
-          ))}
-        </nav>
-        <button
-          onClick={logout}
-          className="flex items-center px-3 py-2 m-2 text-red-600 rounded-lg hover:bg-red-100"
-        >
-          <LogOut className="w-5 h-5" />
-          <span className="ml-3">Logout</span>
-        </button>
-      </aside>
+  const initials = (name = "") =>
+    name
+      .split(" ")
+      .map((w) => w[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
 
-      {/* Main Content */}
-      <main className="flex-1 p-6 overflow-y-auto">
-        <Routes>
-          <Route path="overview" element={<Overview />} />
-          <Route path="posts" element={<Posts />} />
-          <Route path="users" element={<UsersPage />} />
-          <Route path="comments" element={<Comments />} />
-        </Routes>
-      </main>
+  return (
+    <div className="admin-dashboard">
+      <div className="app-shell">
+        {/* Sidebar */}
+        <aside className="sidebar">
+          <div className="masthead">
+            <h1 className="serif ">The Desk</h1>
+            <p>Blog control room</p>
+          </div>
+
+          <div className="who">
+            <div className="avatar serif">
+              {initials(user?.username || "U")}
+            </div>
+            <div>
+              <div className="who-name">{user?.username || "User"}</div>
+              <div className="who-role">{user?.role || "Editor"}</div>
+            </div>
+          </div>
+
+          <nav className="nav">
+            {menuItems.map((item) => {
+              const isActive = location.pathname.includes(item.path);
+              return (
+                <NavLink
+                  key={item.name}
+                  to={item.path}
+                  className={`nav-item ${isActive ? "active" : ""}`}
+                >
+                  <item.icon size={16} />
+                  <span>{item.name}</span>
+                </NavLink>
+              );
+            })}
+          </nav>
+
+          <div className="sidebar-foot">
+            <button className="theme-toggle" onClick={toggleTheme}>
+              <span className="theme-toggle-label">
+                {theme === "dark" ? <Moon size={14} /> : <Sun size={14} />}
+                {theme === "dark" ? "Dark mode" : "Light mode"}
+              </span>
+              <span className="theme-track">
+                <span className="theme-dot" />
+              </span>
+            </button>
+
+            <button onClick={logout} className="logout-btn">
+              <LogOut size={16} />
+              <span>Log out</span>
+            </button>
+          </div>
+        </aside>
+
+        {/* Main content */}
+        <main className="main-content">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 };
 
-// Updated components with blog management functionality
-const Overview = () => {
+// =========================
+// OVERVIEW
+// =========================
+export const Overview = () => {
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Dashboard Overview</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-2">Total Posts</h3>
-          <p className="text-3xl font-bold text-blue-600">24</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-2">Published</h3>
-          <p className="text-3xl font-bold text-green-600">18</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-2">Drafts</h3>
-          <p className="text-3xl font-bold text-yellow-600">6</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-2">Comments</h3>
-          <p className="text-3xl font-bold text-purple-600">42</p>
+      <div className="page-head">
+        <div>
+          <p className="eyebrow">Today</p>
+          <h2 className="serif page-title">Dashboard overview</h2>
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
-        <ul className="space-y-3">
-          <li className="flex items-center p-3 bg-gray-50 rounded">
-            <div className="bg-blue-100 p-2 rounded-full mr-3">
-              <Plus className="w-4 h-4 text-blue-600" />
-            </div>
-            <div>
-              <p className="font-medium">New post published</p>
-              <p className="text-sm text-gray-500">2 hours ago</p>
-            </div>
-          </li>
-          <li className="flex items-center p-3 bg-gray-50 rounded">
-            <div className="bg-green-100 p-2 rounded-full mr-3">
-              <Edit className="w-4 h-4 text-green-600" />
-            </div>
-            <div>
-              <p className="font-medium">Post updated</p>
-              <p className="text-sm text-gray-500">5 hours ago</p>
-            </div>
-          </li>
-          <li className="flex items-center p-3 bg-gray-50 rounded">
-            <div className="bg-red-100 p-2 rounded-full mr-3">
-              <Trash2 className="w-4 h-4 text-red-600" />
-            </div>
-            <div>
-              <p className="font-medium">Post deleted</p>
-              <p className="text-sm text-gray-500">Yesterday</p>
-            </div>
-          </li>
-        </ul>
+      <div className="stats-grid">
+        <div className="stat-card">
+          <p className="stat-label">Total posts</p>
+          <p className="stat-value">24</p>
+        </div>
+        <div className="stat-card">
+          <p className="stat-label">Published</p>
+          <p className="stat-value stat-green">18</p>
+        </div>
+        <div className="stat-card">
+          <p className="stat-label">Drafts</p>
+          <p className="stat-value stat-amber">6</p>
+        </div>
+        <div className="stat-card">
+          <p className="stat-label">Comments</p>
+          <p className="stat-value stat-accent">42</p>
+        </div>
+      </div>
+
+      <div className="panel">
+        <div className="panel-head">Recent activity</div>
+        <div className="activity-item">
+          <div className="activity-dot activity-green">
+            <Plus size={13} />
+          </div>
+          <div>
+            <p className="activity-title">New post published</p>
+            <p className="activity-time">2 hours ago</p>
+          </div>
+        </div>
+        <div className="activity-item">
+          <div className="activity-dot activity-accent">
+            <Edit size={13} />
+          </div>
+          <div>
+            <p className="activity-title">Post updated</p>
+            <p className="activity-time">5 hours ago</p>
+          </div>
+        </div>
+        <div className="activity-item">
+          <div className="activity-dot activity-danger">
+            <Trash2 size={13} />
+          </div>
+          <div>
+            <p className="activity-title">Post deleted</p>
+            <p className="activity-time">Yesterday</p>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
-const Posts = () => {
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      title: "Getting Started with React",
-      category: "Tutorial",
-      status: "Published",
-      date: "2023-05-15",
-    },
-    {
-      id: 2,
-      title: "Advanced CSS Techniques",
-      category: "Design",
-      status: "Published",
-      date: "2023-05-10",
-    },
-    {
-      id: 3,
-      title: "Node.js Best Practices",
-      category: "Backend",
-      status: "Draft",
-      date: "2023-05-05",
-    },
-    {
-      id: 4,
-      title: "Introduction to TypeScript",
-      category: "Tutorial",
-      status: "Published",
-      date: "2023-04-28",
-    },
-    {
-      id: 5,
-      title: "Web Performance Optimization",
-      category: "Development",
-      status: "Draft",
-      date: "2023-04-20",
-    },
-  ]);
-
+// =========================
+// POSTS
+// =========================
+export const Posts = () => {
+  const [posts, setPosts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [formErrors, setFormErrors] = useState({});
+
   const [formData, setFormData] = useState({
     title: "",
     category: "",
     status: "Draft",
+    excerpt: "",
     content: "",
+    image: "",
   });
 
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this post?")) {
-      setPosts(posts.filter((post) => post.id !== id));
+  const API_URL = "http://localhost:5001";
+
+  const fetchPosts = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${API_URL}/api/blogs`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to fetch posts");
+
+      setPosts(data);
+    } catch (err) {
+      console.error("Fetch posts error:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this post? This cannot be undone.")) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${API_URL}/api/blogs/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to delete post");
+
+      setPosts((prev) => prev.filter((post) => post._id !== id));
+    } catch (err) {
+      console.error("Delete error:", err);
+      alert(err.message);
     }
   };
 
   const handleEdit = (post) => {
     setEditingPost(post);
     setFormData({
-      title: post.title,
-      category: post.category,
-      status: post.status,
-      content:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      title: post.title || "",
+      category: post.category || "",
+      status: post.status || "Draft",
+      excerpt: post.excerpt || "",
+      content: post.content || "",
+      image: post.image || "",
     });
+    setFormErrors({});
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e) => {
+  const validateForm = () => {
+    const errs = {};
+    if (!formData.title.trim()) errs.title = "Enter a title before saving.";
+    if (!formData.content.trim()) errs.content = "Content can't be empty.";
+    setFormErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (editingPost) {
-      // Update existing post
-      setPosts(
-        posts.map((post) =>
-          post.id === editingPost.id ? { ...post, ...formData } : post
-        )
-      );
-    } else {
-      // Add new post
-      const newPost = {
-        id: posts.length + 1,
-        ...formData,
-        date: new Date().toISOString().split("T")[0],
-      };
-      setPosts([...posts, newPost]);
+    if (!validateForm()) return;
+
+    try {
+      setSaving(true);
+      const token = localStorage.getItem("token");
+
+      const url = editingPost
+        ? `${API_URL}/api/blogs/${editingPost._id}`
+        : `${API_URL}/api/blogs`;
+      const method = editingPost ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to save post");
+
+      if (editingPost) {
+        setPosts((prev) =>
+          prev.map((post) => (post._id === editingPost._id ? data.blog : post)),
+        );
+      } else {
+        setPosts((prev) => [data.blog, ...prev]);
+      }
+
+      closeModal();
+    } catch (err) {
+      console.error("Save post error:", err);
+      alert(err.message);
+    } finally {
+      setSaving(false);
     }
+  };
+
+  const closeModal = () => {
     setIsModalOpen(false);
     setEditingPost(null);
+    setFormErrors({});
     setFormData({
       title: "",
       category: "",
       status: "Draft",
+      excerpt: "",
       content: "",
+      image: "",
     });
   };
 
-  const filteredPosts = posts.filter(
-    (post) =>
-      post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      post.category.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredPosts = posts.filter((post) =>
+    `${post.title} ${post.category}`
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase()),
   );
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Manage Posts</h1>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center"
-        >
-          <Plus className="w-5 h-5 mr-2" />
-          Add New Post
-        </button>
-      </div>
-
-      <div className="bg-white p-4 rounded-lg shadow mb-6">
-        <div className="relative">
-          <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search posts..."
-            className="pl-10 pr-4 py-2 w-full border rounded-lg"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      <div className="page-head">
+        <div>
+          <p className="eyebrow">Editorial</p>
+          <h2 className="serif page-title">Manage posts</h2>
+        </div>
+        <div className="head-actions">
+          <div className="search-box">
+            <Search size={15} />
+            <input
+              type="text"
+              placeholder="Search posts..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <button
+            onClick={() => {
+              setEditingPost(null);
+              setFormData({
+                title: "",
+                category: "",
+                status: "Draft",
+                excerpt: "",
+                content: "",
+                image: "",
+              });
+              setFormErrors({});
+              setIsModalOpen(true);
+            }}
+            className="btn-primary"
+          >
+            <Plus size={15} />
+            New post
+          </button>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Title
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Category
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Date
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {filteredPosts.map((post) => (
-              <tr key={post.id}>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="font-medium text-gray-900">{post.title}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded-full">
-                    {post.category}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                      post.status === "Published"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-yellow-100 text-yellow-800"
-                    }`}
-                  >
-                    {post.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {post.date}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button
-                    onClick={() => handleEdit(post)}
-                    className="text-blue-600 hover:text-blue-900 mr-3"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(post.id)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </td>
+      {error && <div className="error-banner">{error}</div>}
+
+      <div className="panel">
+        {loading ? (
+          <div className="empty-state">
+            <p>Loading posts...</p>
+          </div>
+        ) : filteredPosts.length === 0 ? (
+          <div className="empty-state">
+            <Search size={28} />
+            <p>No posts found.</p>
+          </div>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredPosts.map((post) => (
+                <tr key={post._id}>
+                  <td>
+                    <div className="cell-title">{post.title}</div>
+                    {post.excerpt && (
+                      <div className="cell-sub">{post.excerpt}</div>
+                    )}
+                  </td>
+                  <td>
+                    <span className="tag">{post.category}</span>
+                  </td>
+                  <td>
+                    <Stamp status={post.status} />
+                  </td>
+                  <td className="cell-meta">
+                    {new Date(post.createdAt).toLocaleDateString()}
+                  </td>
+                  <td>
+                    <div className="row-actions">
+                      <button
+                        onClick={() => handleEdit(post)}
+                        className="icon-btn"
+                        aria-label="Edit"
+                      >
+                        <Edit size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(post._id)}
+                        className="icon-btn icon-btn-danger"
+                        aria-label="Delete"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
 
-      {/* Add/Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl">
-            <div className="p-6">
-              <h2 className="text-xl font-bold mb-4">
-                {editingPost ? "Edit Post" : "Add New Post"}
-              </h2>
-              <form onSubmit={handleSubmit}>
-                <div className="mb-4">
-                  <label
-                    className="block text-gray-700 text-sm font-bold mb-2"
-                    htmlFor="title"
-                  >
-                    Title
-                  </label>
+        <div
+          className="modal-backdrop"
+          onClick={(e) => e.target === e.currentTarget && closeModal()}
+        >
+          <div className="modal">
+            <div className="modal-head">
+              <h3 className="serif">
+                {editingPost ? "Edit post" : "New post"}
+              </h3>
+              <button onClick={closeModal} aria-label="Close">
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit}>
+              <div className="modal-body">
+                <div className="field">
+                  <label>Title</label>
                   <input
-                    id="title"
                     type="text"
-                    className="w-full px-3 py-2 border rounded-lg"
+                    placeholder="Give the piece a headline"
                     value={formData.title}
                     onChange={(e) =>
                       setFormData({ ...formData, title: e.target.value })
                     }
-                    required
                   />
+                  {formErrors.title && (
+                    <div className="error-text">{formErrors.title}</div>
+                  )}
                 </div>
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <label
-                      className="block text-gray-700 text-sm font-bold mb-2"
-                      htmlFor="category"
-                    >
-                      Category
-                    </label>
+
+                <div className="field-row">
+                  <div className="field">
+                    <label>Category</label>
                     <select
-                      id="category"
-                      className="w-full px-3 py-2 border rounded-lg"
                       value={formData.category}
                       onChange={(e) =>
                         setFormData({ ...formData, category: e.target.value })
                       }
-                      required
                     >
-                      <option value="">Select Category</option>
+                      <option value="">Select category</option>
                       <option value="Tutorial">Tutorial</option>
                       <option value="Design">Design</option>
                       <option value="Development">Development</option>
                       <option value="Backend">Backend</option>
+                      <option value="AI">AI</option>
                     </select>
                   </div>
-                  <div>
-                    <label
-                      className="block text-gray-700 text-sm font-bold mb-2"
-                      htmlFor="status"
-                    >
-                      Status
-                    </label>
+
+                  <div className="field">
+                    <label>Status</label>
                     <select
-                      id="status"
-                      className="w-full px-3 py-2 border rounded-lg"
                       value={formData.status}
                       onChange={(e) =>
                         setFormData({ ...formData, status: e.target.value })
@@ -395,50 +524,63 @@ const Posts = () => {
                     </select>
                   </div>
                 </div>
-                <div className="mb-6">
-                  <label
-                    className="block text-gray-700 text-sm font-bold mb-2"
-                    htmlFor="content"
-                  >
-                    Content
-                  </label>
+
+                <div className="field">
+                  <label>Excerpt</label>
                   <textarea
-                    id="content"
-                    rows="6"
-                    className="w-full px-3 py-2 border rounded-lg"
+                    rows="2"
+                    placeholder="Short description of your blog..."
+                    value={formData.excerpt}
+                    onChange={(e) =>
+                      setFormData({ ...formData, excerpt: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="field">
+                  <label>Image URL</label>
+                  <input
+                    type="url"
+                    placeholder="https://example.com/image.jpg"
+                    value={formData.image}
+                    onChange={(e) =>
+                      setFormData({ ...formData, image: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="field">
+                  <label>Content</label>
+                  <textarea
+                    rows="8"
                     value={formData.content}
                     onChange={(e) =>
                       setFormData({ ...formData, content: e.target.value })
                     }
-                    required
-                  ></textarea>
+                  />
+                  {formErrors.content && (
+                    <div className="error-text">{formErrors.content}</div>
+                  )}
                 </div>
-                <div className="flex justify-end space-x-3">
-                  <button
-                    type="button"
-                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100"
-                    onClick={() => {
-                      setIsModalOpen(false);
-                      setEditingPost(null);
-                      setFormData({
-                        title: "",
-                        category: "",
-                        status: "Draft",
-                        content: "",
-                      });
-                    }}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                  >
-                    {editingPost ? "Update Post" : "Create Post"}
-                  </button>
-                </div>
-              </form>
-            </div>
+              </div>
+
+              <div className="modal-foot">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="btn-ghost"
+                >
+                  Cancel
+                </button>
+                <button type="submit" disabled={saving} className="btn-primary">
+                  {saving
+                    ? "Saving..."
+                    : editingPost
+                      ? "Update post"
+                      : "Create post"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -446,23 +588,51 @@ const Posts = () => {
   );
 };
 
-const UsersPage = () => {
+// =========================
+// USERS (placeholder — wire up to your users API when it exists)
+// =========================
+export const UsersPage = () => {
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Manage Users</h1>
-      <div className="bg-white p-6 rounded-lg shadow">
-        <p>User management functionality will be implemented here.</p>
+      <div className="page-head">
+        <div>
+          <p className="eyebrow">Masthead</p>
+          <h2 className="serif page-title">Manage users</h2>
+        </div>
+      </div>
+      <div className="panel">
+        <div className="empty-state">
+          <Users size={28} />
+          <p>
+            User management is on its way. Connect an API to populate this
+            table.
+          </p>
+        </div>
       </div>
     </div>
   );
 };
 
-const Comments = () => {
+// =========================
+// COMMENTS (placeholder — wire up to your comments API when it exists)
+// =========================
+export const Comments = () => {
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Manage Comments</h1>
-      <div className="bg-white p-6 rounded-lg shadow">
-        <p>Comment management functionality will be implemented here.</p>
+      <div className="page-head">
+        <div>
+          <p className="eyebrow">Letters to the editor</p>
+          <h2 className="serif page-title">Manage comments</h2>
+        </div>
+      </div>
+      <div className="panel">
+        <div className="empty-state">
+          <MessageSquare size={28} />
+          <p>
+            Comment moderation is on its way. Connect an API to populate this
+            table.
+          </p>
+        </div>
       </div>
     </div>
   );

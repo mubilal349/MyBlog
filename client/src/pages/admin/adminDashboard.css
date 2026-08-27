@@ -1,0 +1,1134 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap");
+
+/* Theme tokens live on the root so they can flip with data-admin-theme
+   without a Tailwind dark: build step. */
+:root[data-admin-theme="light"] {
+  --ad-bg: #eeede6;
+  --ad-surface: #ffffff;
+  --ad-surface-2: #f5f4ee;
+  --ad-ink: #1c1b18;
+  --ad-ink-soft: #6b6862;
+  --ad-ink-faint: #97948c;
+  --ad-rule: #dcd9cc;
+  --ad-rule-strong: #c7c3b3;
+  --ad-accent: #2b4570;
+  --ad-accent-soft: #e5ebf3;
+  --ad-accent-ink: #1c2f4d;
+  --ad-green: #2f6b4f;
+  --ad-green-bg: #e3efe7;
+  --ad-amber: #93611c;
+  --ad-amber-bg: #f5ebda;
+  --ad-danger: #a63a3a;
+  --ad-danger-bg: #f5e4e1;
+  --ad-shadow:
+    0 1px 2px rgba(28, 27, 24, 0.06), 0 8px 24px rgba(28, 27, 24, 0.07);
+}
+:root[data-admin-theme="dark"] {
+  --ad-bg: #131417;
+  --ad-surface: #1b1d22;
+  --ad-surface-2: #202329;
+  --ad-ink: #ece9e0;
+  --ad-ink-soft: #a6a39a;
+  --ad-ink-faint: #706d66;
+  --ad-rule: #33353c;
+  --ad-rule-strong: #43454e;
+  --ad-accent: #8fadd9;
+  --ad-accent-soft: #232b38;
+  --ad-accent-ink: #cfe0f5;
+  --ad-green: #7bcba0;
+  --ad-green-bg: #1c2d24;
+  --ad-amber: #dbab5e;
+  --ad-amber-bg: #2c2419;
+  --ad-danger: #e28787;
+  --ad-danger-bg: #2e1e1e;
+  --ad-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+/* ==========================================
+   ADMIN DASHBOARD
+   ========================================== */
+
+.admin-dashboard {
+  background: var(--ad-bg);
+  color: var(--ad-ink);
+  font-family: "Inter", sans-serif;
+
+  width: 100%;
+  height: 100vh;
+
+  overflow: hidden;
+
+  transition:
+    background 0.25s ease,
+    color 0.25s ease;
+}
+
+.admin-dashboard * {
+  box-sizing: border-box;
+}
+
+.admin-dashboard .serif {
+  font-family: "Fraunces", serif;
+}
+
+/* ==========================================
+   APP SHELL
+   ========================================== */
+
+.admin-dashboard .app-shell {
+  display: flex;
+
+  width: 100%;
+  height: 100vh;
+
+  overflow: hidden;
+}
+
+/* ==========================================
+   SIDEBAR
+   ========================================== */
+
+.admin-dashboard .sidebar {
+  width: 240px;
+  height: 100vh;
+
+  flex-shrink: 0;
+
+  background: var(--ad-surface);
+  border-right: 1px solid var(--ad-rule);
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 28px 20px;
+
+  overflow: hidden;
+}
+
+/* ==========================================
+   MASTHEAD
+   ========================================== */
+
+.admin-dashboard .masthead {
+  padding-bottom: 18px;
+  margin-bottom: 18px;
+
+  border-bottom: 3px double var(--ad-rule-strong);
+}
+
+.admin-dashboard .masthead h1 {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: -0.01em;
+
+  color: var(--ad-ink);
+  transition: color 0.25s ease;
+}
+
+.admin-dashboard .masthead p {
+  margin: 4px 0 0;
+
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+
+  color: var(--ad-ink-faint);
+
+  transition: color 0.25s ease;
+}
+
+/* ==========================================
+   USER INFO
+   ========================================== */
+
+.admin-dashboard .who {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 10px 0 20px;
+
+  border-bottom: 1px solid var(--ad-rule);
+
+  margin-bottom: 16px;
+}
+
+.admin-dashboard .avatar {
+  width: 32px;
+  height: 32px;
+
+  border-radius: 50%;
+
+  background: var(--ad-accent-soft);
+  color: var(--ad-accent-ink);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  flex-shrink: 0;
+}
+
+.admin-dashboard .who-name {
+  font-size: 13px;
+  font-weight: 500;
+
+  line-height: 1.2;
+}
+
+.admin-dashboard .who-role {
+  font-size: 11px;
+
+  color: var(--ad-ink-faint);
+}
+
+/* ==========================================
+   NAVIGATION
+   ========================================== */
+
+.admin-dashboard .nav {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 2px;
+
+  min-width: 0;
+  min-height: 0;
+
+  /*
+    Keep the sidebar navigation fixed.
+    The main dashboard content will scroll instead.
+  */
+  overflow: hidden;
+}
+
+.admin-dashboard .nav-item {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 9px 10px;
+
+  border-radius: 6px;
+
+  color: var(--ad-ink-soft);
+
+  text-decoration: none;
+
+  font-size: 13.5px;
+
+  white-space: nowrap;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.admin-dashboard .nav-item svg {
+  flex-shrink: 0;
+}
+
+.admin-dashboard .nav-item:hover {
+  background: var(--ad-surface-2);
+  color: var(--ad-ink);
+}
+
+.admin-dashboard .nav-item.active {
+  background: var(--ad-accent-soft);
+  color: var(--ad-accent-ink);
+
+  font-weight: 500;
+}
+
+/* ==========================================
+   SIDEBAR FOOTER
+   ========================================== */
+
+.admin-dashboard .sidebar-foot {
+  border-top: 1px solid var(--ad-rule);
+
+  padding-top: 14px;
+  margin-top: 14px;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+
+  flex-shrink: 0;
+}
+
+/* ==========================================
+   THEME TOGGLE
+   ========================================== */
+
+.admin-dashboard .theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 8px 10px;
+
+  border-radius: 6px;
+
+  border: 1px solid var(--ad-rule);
+
+  background: var(--ad-surface-2);
+
+  cursor: pointer;
+
+  font-size: 12.5px;
+
+  color: var(--ad-ink-soft);
+
+  font-family: "Inter", sans-serif;
+
+  white-space: nowrap;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.admin-dashboard .theme-toggle:hover {
+  background: var(--ad-surface);
+  color: var(--ad-ink);
+}
+
+.admin-dashboard .theme-toggle-label {
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+}
+
+.admin-dashboard .theme-track {
+  width: 30px;
+  height: 16px;
+
+  border-radius: 20px;
+
+  background: var(--ad-rule-strong);
+
+  position: relative;
+
+  flex-shrink: 0;
+}
+
+.admin-dashboard .theme-dot {
+  width: 12px;
+  height: 12px;
+
+  border-radius: 50%;
+
+  background: var(--ad-surface);
+
+  position: absolute;
+
+  top: 2px;
+  left: 2px;
+
+  transition:
+    left 0.18s ease,
+    background 0.18s ease;
+}
+
+/* Dark mode switch position */
+
+:root[data-admin-theme="dark"] .admin-dashboard .theme-dot {
+  left: 16px;
+
+  background: var(--ad-accent);
+}
+
+/* ==========================================
+   LOGOUT BUTTON
+   ========================================== */
+
+.admin-dashboard .logout-btn {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 9px 10px;
+
+  border-radius: 6px;
+
+  border: none;
+
+  background: none;
+
+  color: var(--ad-danger);
+
+  font-size: 13.5px;
+
+  cursor: pointer;
+
+  font-family: "Inter", sans-serif;
+
+  white-space: nowrap;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.admin-dashboard .logout-btn:hover {
+  background: var(--ad-danger-bg);
+}
+
+/* ==========================================
+   MAIN CONTENT
+   ========================================== */
+
+/*
+  IMPORTANT:
+
+  Only this section scrolls.
+
+  The sidebar remains fixed because:
+  - sidebar has height: 100vh
+  - app-shell has height: 100vh
+  - admin-dashboard has overflow: hidden
+  - main-content has overflow-y: auto
+*/
+
+.admin-dashboard .main-content {
+  flex: 1;
+
+  min-width: 0;
+  min-height: 0;
+
+  height: 100vh;
+
+  padding: 32px 40px;
+
+  /*
+    Remove max-width so the dashboard
+    uses all available horizontal space.
+  */
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  /*
+    Smooth scrolling
+  */
+  scroll-behavior: smooth;
+}
+
+/* ==========================================
+   MAIN CONTENT SCROLLBAR
+   ========================================== */
+
+.admin-dashboard .main-content::-webkit-scrollbar {
+  width: 7px;
+}
+
+.admin-dashboard .main-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-dashboard .main-content::-webkit-scrollbar-thumb {
+  background: var(--ad-rule-strong);
+
+  border-radius: 10px;
+}
+
+.admin-dashboard .main-content::-webkit-scrollbar-thumb:hover {
+  background: var(--ad-ink-faint);
+}
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+
+@media (max-width: 900px) {
+  .admin-dashboard .sidebar {
+    width: 220px;
+  }
+
+  .admin-dashboard .main-content {
+    padding: 28px 24px;
+  }
+}
+
+@media (max-width: 700px) {
+  .admin-dashboard .sidebar {
+    width: 200px;
+
+    padding: 24px 14px;
+  }
+
+  .admin-dashboard .main-content {
+    padding: 24px 18px;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-dashboard .app-shell {
+    display: block;
+
+    overflow: hidden;
+  }
+
+  .admin-dashboard .sidebar {
+    width: 100%;
+    height: auto;
+
+    max-height: 220px;
+
+    padding: 16px;
+
+    overflow-y: auto;
+
+    border-right: none;
+    border-bottom: 1px solid var(--ad-rule);
+  }
+
+  .admin-dashboard .masthead {
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+  }
+
+  .admin-dashboard .who {
+    padding: 8px 0 12px;
+    margin-bottom: 10px;
+  }
+
+  .admin-dashboard .nav {
+    flex-direction: row;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    padding-bottom: 4px;
+  }
+
+  .admin-dashboard .nav-item {
+    flex-shrink: 0;
+  }
+
+  .admin-dashboard .sidebar-foot {
+    flex-direction: row;
+
+    border-top: none;
+
+    padding-top: 10px;
+    margin-top: 10px;
+  }
+
+  .admin-dashboard .theme-toggle {
+    flex: 1;
+  }
+
+  .admin-dashboard .logout-btn {
+    flex-shrink: 0;
+  }
+
+  .admin-dashboard .main-content {
+    width: 100%;
+    height: calc(100vh - 220px);
+
+    padding: 20px 16px;
+
+    overflow-y: auto;
+  }
+}
+
+.admin-dashboard {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-shell {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.main-content {
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.admin-dashboard .page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.admin-dashboard .eyebrow {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ad-ink-faint);
+  margin: 0 0 6px;
+}
+.admin-dashboard .page-title {
+  font-size: 30px;
+  margin: 0;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.admin-dashboard .head-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.admin-dashboard .search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1 1 220px;
+  min-width: 160px;
+}
+.admin-dashboard .search-box svg {
+  position: absolute;
+  left: 11px;
+  color: var(--ad-ink-faint);
+  pointer-events: none;
+}
+.admin-dashboard .search-box input {
+  padding: 9px 12px 9px 34px;
+  width: 100%;
+  border-radius: 7px;
+  border: 1px solid var(--ad-rule);
+  background: var(--ad-surface);
+  color: var(--ad-ink);
+  font-size: 13px;
+  font-family: "Inter", sans-serif;
+}
+.admin-dashboard .search-box input:focus {
+  outline: none;
+  border-color: var(--ad-accent);
+}
+
+.admin-dashboard .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: var(--ad-accent);
+  color: #fff;
+  border: none;
+  padding: 9px 16px;
+  border-radius: 7px;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+  white-space: nowrap;
+}
+.admin-dashboard .btn-primary:hover {
+  opacity: 0.92;
+}
+.admin-dashboard .btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-dashboard .btn-ghost {
+  padding: 9px 16px;
+  border-radius: 7px;
+  border: 1px solid var(--ad-rule);
+  background: var(--ad-surface);
+  color: var(--ad-ink);
+  font-size: 13.5px;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+}
+.admin-dashboard .btn-ghost:hover {
+  background: var(--ad-surface-2);
+}
+
+/* ---------- stat cards ---------- */
+.admin-dashboard .stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 34px;
+}
+.admin-dashboard .stat-card {
+  background: var(--ad-surface);
+  border: 1px solid var(--ad-rule);
+  border-radius: 10px;
+  padding: 18px 18px 16px;
+  min-width: 0;
+}
+.admin-dashboard .stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ad-ink-faint);
+  margin: 0 0 10px;
+}
+.admin-dashboard .stat-value {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 30px;
+  font-weight: 500;
+  margin: 0;
+}
+.admin-dashboard .stat-accent {
+  color: var(--ad-accent);
+}
+.admin-dashboard .stat-green {
+  color: var(--ad-green);
+}
+.admin-dashboard .stat-amber {
+  color: var(--ad-amber);
+}
+
+.admin-dashboard .panel {
+  background: var(--ad-surface);
+  border: 1px solid var(--ad-rule);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* table gets its own horizontal-scroll wrapper so narrow screens scroll
+   the table instead of squeezing every column unreadably */
+.admin-dashboard .table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.admin-dashboard table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+}
+
+.admin-dashboard .panel-head {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--ad-rule);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.admin-dashboard .activity-item {
+  display: flex;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--ad-rule);
+  align-items: flex-start;
+}
+.admin-dashboard .activity-item:last-child {
+  border-bottom: none;
+}
+.admin-dashboard .activity-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.admin-dashboard .activity-green {
+  background: var(--ad-green-bg);
+  color: var(--ad-green);
+}
+.admin-dashboard .activity-accent {
+  background: var(--ad-accent-soft);
+  color: var(--ad-accent);
+}
+.admin-dashboard .activity-danger {
+  background: var(--ad-danger-bg);
+  color: var(--ad-danger);
+}
+.admin-dashboard .activity-title {
+  font-size: 13.5px;
+  font-weight: 500;
+  margin: 0;
+}
+.admin-dashboard .activity-time {
+  font-size: 11.5px;
+  color: var(--ad-ink-faint);
+  margin: 2px 0 0;
+  font-family: "JetBrains Mono", monospace;
+}
+
+/* ---------- table ---------- */
+.admin-dashboard thead th {
+  text-align: left;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ad-ink-faint);
+  font-weight: 500;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--ad-rule-strong);
+  background: var(--ad-surface-2);
+}
+.admin-dashboard tbody td {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--ad-rule);
+  font-size: 13.5px;
+  vertical-align: middle;
+}
+.admin-dashboard tbody tr:last-child td {
+  border-bottom: none;
+}
+.admin-dashboard tbody tr:hover {
+  background: var(--ad-surface-2);
+}
+.admin-dashboard .cell-title {
+  font-weight: 500;
+}
+.admin-dashboard .cell-sub {
+  font-size: 12px;
+  color: var(--ad-ink-faint);
+  margin-top: 2px;
+}
+.admin-dashboard .cell-meta {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  color: var(--ad-ink-soft);
+}
+
+.admin-dashboard .tag {
+  display: inline-block;
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: var(--ad-accent-soft);
+  color: var(--ad-accent-ink);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* signature element: ink stamp badges */
+.admin-dashboard .stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10.5px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 4px 9px;
+  border-radius: 3px;
+  border: 1.5px dashed;
+  transform: rotate(-2deg);
+  white-space: nowrap;
+}
+.admin-dashboard .stamp-published,
+.admin-dashboard .stamp-active,
+.admin-dashboard .stamp-approved {
+  color: var(--ad-green);
+  border-color: var(--ad-green);
+  background: var(--ad-green-bg);
+}
+.admin-dashboard .stamp-draft,
+.admin-dashboard .stamp-pending {
+  color: var(--ad-amber);
+  border-color: var(--ad-amber);
+  background: var(--ad-amber-bg);
+}
+.admin-dashboard .stamp-suspended {
+  color: var(--ad-danger);
+  border-color: var(--ad-danger);
+  background: var(--ad-danger-bg);
+}
+
+.admin-dashboard .row-actions {
+  display: flex;
+  gap: 6px;
+}
+.admin-dashboard .icon-btn {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid var(--ad-rule);
+  background: var(--ad-surface);
+  cursor: pointer;
+  color: var(--ad-ink-soft);
+  flex-shrink: 0;
+}
+.admin-dashboard .icon-btn:hover {
+  background: var(--ad-surface-2);
+  color: var(--ad-ink);
+}
+.admin-dashboard .icon-btn-danger:hover {
+  background: var(--ad-danger-bg);
+  color: var(--ad-danger);
+  border-color: var(--ad-danger);
+}
+
+.admin-dashboard .empty-state {
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--ad-ink-faint);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.admin-dashboard .empty-state p {
+  margin: 0;
+  font-size: 13.5px;
+  max-width: 320px;
+}
+
+.admin-dashboard .error-banner {
+  background: var(--ad-danger-bg);
+  color: var(--ad-danger);
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 13.5px;
+}
+
+/* ---------- modal ---------- */
+.admin-dashboard .modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 19, 17, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 20px;
+}
+.admin-dashboard .modal {
+  background: var(--ad-surface);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 88vh;
+  overflow-y: auto;
+  box-shadow: var(--ad-shadow);
+}
+.admin-dashboard .modal-head {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--ad-rule);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.admin-dashboard .modal-head h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 500;
+}
+.admin-dashboard .modal-head button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--ad-ink-faint);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.admin-dashboard .modal-head button:hover {
+  background: var(--ad-surface-2);
+}
+.admin-dashboard .modal-body {
+  padding: 22px 24px;
+}
+.admin-dashboard .field {
+  margin-bottom: 16px;
+}
+.admin-dashboard .field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--ad-ink-soft);
+}
+.admin-dashboard .field input,
+.admin-dashboard .field select,
+.admin-dashboard .field textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 7px;
+  border: 1px solid var(--ad-rule);
+  background: var(--ad-bg);
+  color: var(--ad-ink);
+  font-size: 13.5px;
+  font-family: "Inter", sans-serif;
+  resize: vertical;
+}
+.admin-dashboard .field input:focus,
+.admin-dashboard .field select:focus,
+.admin-dashboard .field textarea:focus {
+  outline: none;
+  border-color: var(--ad-accent);
+}
+.admin-dashboard .field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.admin-dashboard .modal-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--ad-rule);
+  flex-wrap: wrap;
+}
+
+.admin-dashboard .error-text {
+  font-size: 12px;
+  color: var(--ad-danger);
+  margin-top: 4px;
+}
+
+/* ==========================================================
+   RESPONSIVE — tablet: sidebar collapses to a horizontal bar
+   but keeps every control visible (theme toggle + logout no
+   longer disappear).
+   ========================================================== */
+@media (max-width: 860px) {
+  .admin-dashboard .app-shell {
+    flex-direction: column;
+  }
+  .admin-dashboard .sidebar {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    padding: 10px 14px;
+    gap: 14px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .admin-dashboard .masthead {
+    display: none;
+  }
+  .admin-dashboard .who {
+    border-bottom: none;
+    padding: 0;
+    margin: 0;
+    flex-shrink: 0;
+  }
+  .admin-dashboard .who-name,
+  .admin-dashboard .who-role {
+    display: none;
+  }
+  .admin-dashboard .nav {
+    flex: 0 0 auto;
+    flex-direction: row;
+    gap: 4px;
+  }
+  .admin-dashboard .nav-item {
+    padding: 8px 10px;
+  }
+  .admin-dashboard .sidebar-foot {
+    flex-direction: row;
+    border-top: none;
+    padding-top: 0;
+    margin-top: 0;
+    margin-left: auto;
+    flex-shrink: 0;
+    gap: 8px;
+  }
+  .admin-dashboard .theme-toggle-label span:last-child {
+    display: none;
+  }
+  .admin-dashboard .theme-toggle {
+    padding: 8px;
+  }
+  .admin-dashboard .logout-btn span {
+    display: none;
+  }
+  .admin-dashboard .logout-btn {
+    padding: 8px;
+  }
+
+  .admin-dashboard .main-content {
+    padding: 20px;
+  }
+  .admin-dashboard .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .admin-dashboard .page-title {
+    font-size: 24px;
+  }
+}
+
+/* ==========================================================
+   RESPONSIVE — phone: stack the header, drop nav labels,
+   single-column stats and modal fields.
+   ========================================================== */
+@media (max-width: 520px) {
+  .admin-dashboard .sidebar {
+    padding: 8px 10px;
+    gap: 10px;
+  }
+  .admin-dashboard .who {
+    display: none;
+  }
+  .admin-dashboard .nav-item span {
+    display: none;
+  }
+  .admin-dashboard .nav-item {
+    padding: 8px;
+  }
+
+  .admin-dashboard .main-content {
+    padding: 16px;
+  }
+  .admin-dashboard .page-head {
+    align-items: stretch;
+  }
+  .admin-dashboard .page-title {
+    font-size: 21px;
+  }
+  .admin-dashboard .head-actions {
+    width: 100%;
+  }
+  .admin-dashboard .search-box {
+    flex-basis: 100%;
+  }
+  .admin-dashboard .btn-primary {
+    flex: 1 1 auto;
+  }
+
+  .admin-dashboard .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-dashboard .field-row {
+    grid-template-columns: 1fr;
+  }
+  .admin-dashboard .modal-body {
+    padding: 18px;
+  }
+  .admin-dashboard .modal-head {
+    padding: 16px 18px;
+  }
+  .admin-dashboard .modal-foot {
+    padding: 14px 18px;
+  }
+  .admin-dashboard .modal-foot button {
+    flex: 1 1 auto;
+  }
+}
