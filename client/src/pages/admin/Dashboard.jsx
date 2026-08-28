@@ -15,6 +15,7 @@ import {
   Moon,
   X,
   Check,
+  Settings,
 } from "lucide-react";
 import "./adminDashboard.css";
 
@@ -61,6 +62,7 @@ const AdminDashboard = () => {
     { name: "Manage posts", path: "posts", icon: FileText },
     { name: "Manage users", path: "users", icon: Users },
     { name: "Manage comments", path: "comments", icon: MessageSquare },
+    { name: "Settings", path: "settings", icon: Settings },
   ];
 
   const initials = (name = "") =>

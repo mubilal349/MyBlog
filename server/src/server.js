@@ -9,6 +9,8 @@ import connectDB from "./config/db.js";
 
 import authRoutes from "./routes/authRoutes.js";
 import blogRoutes from "./routes/blogRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+import commentRoutes from "./routes/commentRoutes.js";
 
 dotenv.config();
 
@@ -65,6 +67,10 @@ connectDB();
 app.use("/api/auth", authRoutes);
 
 app.use("/api/blogs", blogRoutes);
+
+app.use("/api/users", userRoutes);
+
+app.use("/api/comments", commentRoutes);
 
 // ==========================================
 // HEALTH

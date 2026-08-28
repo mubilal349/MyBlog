@@ -1,6 +1,7 @@
 import axios from "axios";
 
 const API_URL = "http://localhost:5001/api/blogs";
+const COMMENTS_API_URL = "http://localhost:5001/api/comments";
 
 // ==========================================
 // GET PUBLISHED BLOGS
@@ -162,6 +163,101 @@ export const deleteBlog = async (id) => {
     return response.data;
   } catch (error) {
     console.error("Delete blog error:", error.response?.data || error.message);
+
+    throw error;
+  }
+};
+
+// ==========================================
+// LIKE / UNLIKE BLOG
+// AUTHENTICATED USER
+// ==========================================
+
+export const toggleBlogLike = async (blogId) => {
+  try {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      throw new Error("Please login to like this blog.");
+    }
+
+    const response = await axios.post(
+      `${API_URL}/${blogId}/like`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Toggle blog like error:",
+      error.response?.data || error.message,
+    );
+
+    throw error;
+  }
+};
+
+// ==========================================
+// GET APPROVED COMMENTS
+// PUBLIC
+// ==========================================
+
+export const getApprovedComments = async (blogId) => {
+  try {
+    const response = await axios.get(`${COMMENTS_API_URL}/blog/${blogId}`);
+
+    console.log("Approved comments API response:", response.data);
+
+    // If backend returns { comments: [...] }
+    return response.data.comments || [];
+  } catch (error) {
+    console.error(
+      "Get approved comments error:",
+      error.response?.data || error.message,
+    );
+
+    throw error;
+  }
+};
+
+// ==========================================
+// CREATE COMMENT
+// AUTHENTICATED USER
+// ==========================================
+
+export const createComment = async (blogId, content) => {
+  try {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      throw new Error("Please login to comment");
+    }
+
+    const response = await axios.post(
+      COMMENTS_API_URL,
+      {
+        blogId,
+        content,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Create comment error:",
+      error.response?.data || error.message,
+    );
 
     throw error;
   }

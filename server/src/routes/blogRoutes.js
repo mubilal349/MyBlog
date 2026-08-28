@@ -8,6 +8,7 @@ import {
   getAdminBlogById,
   updateBlog,
   deleteBlog,
+  toggleLike,
 } from "../controllers/blogController.js";
 
 import {
@@ -35,6 +36,13 @@ router.put("/:id", authenticateToken, requireAdmin, updateBlog);
 
 // Delete
 router.delete("/:id", authenticateToken, requireAdmin, deleteBlog);
+
+// ==========================================
+// LIKE ROUTE
+// ==========================================
+
+// Like / Unlike blog
+router.post("/:id/like", authenticateToken, toggleLike);
 
 // ==========================================
 // PUBLIC ROUTES

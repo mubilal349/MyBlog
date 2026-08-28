@@ -1,4 +1,5 @@
 import Blog from "../models/Blog.js";
+import Comment from "../models/Comment.js";
 
 // ==========================================
 // CREATE SLUG
@@ -78,13 +79,26 @@ export const getPublishedBlogs = async (req, res) => {
       status: "Published",
     })
       .populate("author", "username name email")
-      .sort({ publishedAt: -1 });
+      .sort({ publishedAt: -1 })
+      .lean();
 
-    console.log("Published blogs found:", blogs.length);
-    console.log("Published blogs:", blogs);
+    const blogsWithCounts = await Promise.all(
+      blogs.map(async (blog) => {
+        const commentsCount = await Comment.countDocuments({
+          blog: blog._id,
+          status: "approved",
+        });
+
+        return {
+          ...blog,
+          likesCount: blog.likes?.length || 0,
+          commentsCount,
+        };
+      }),
+    );
 
     res.status(200).json({
-      blogs,
+      blogs: blogsWithCounts,
     });
   } catch (error) {
     console.error("Get published blogs error:", error);
@@ -108,11 +122,11 @@ export const getBlogBySlug = async (req, res) => {
     console.log("Requested blog slug:", slug);
 
     const blog = await Blog.findOne({
-      slug: slug,
+      slug,
       status: "Published",
-    }).populate("author", "username name email");
-
-    console.log("Blog found:", blog);
+    })
+      .populate("author", "username name email")
+      .lean();
 
     if (!blog) {
       return res.status(404).json({
@@ -120,8 +134,27 @@ export const getBlogBySlug = async (req, res) => {
       });
     }
 
+    // Count ONLY approved comments
+    const commentsCount = await Comment.countDocuments({
+      blog: blog._id,
+      status: "approved",
+    });
+
+    const blogWithStats = {
+      ...blog,
+
+      likesCount: Array.isArray(blog.likes) ? blog.likes.length : 0,
+
+      commentsCount,
+    };
+
+    console.log("Blog stats:", {
+      likesCount: blogWithStats.likesCount,
+      commentsCount: blogWithStats.commentsCount,
+    });
+
     res.status(200).json({
-      blog,
+      blog: blogWithStats,
     });
   } catch (error) {
     console.error("Get blog by slug error:", error);
@@ -132,7 +165,6 @@ export const getBlogBySlug = async (req, res) => {
     });
   }
 };
-
 // ==========================================
 // GET ALL BLOGS
 // ADMIN ONLY
@@ -294,6 +326,59 @@ export const deleteBlog = async (req, res) => {
 
     res.status(500).json({
       error: "Failed to delete blog",
+    });
+  }
+};
+
+// ==========================================
+// TOGGLE BLOG LIKE
+// AUTHENTICATED USERS
+// ==========================================
+
+export const toggleLike = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const blog = await Blog.findById(id);
+
+    if (!blog) {
+      return res.status(404).json({
+        error: "Blog not found",
+      });
+    }
+
+    // Make sure likes always exists
+    if (!Array.isArray(blog.likes)) {
+      blog.likes = [];
+    }
+
+    const userId = req.user._id.toString();
+
+    const alreadyLiked = blog.likes.some(
+      (likeId) => likeId.toString() === userId,
+    );
+
+    if (alreadyLiked) {
+      // Remove like
+      blog.likes = blog.likes.filter((likeId) => likeId.toString() !== userId);
+    } else {
+      // Add like
+      blog.likes.push(req.user._id);
+    }
+
+    await blog.save();
+
+    return res.status(200).json({
+      message: alreadyLiked ? "Like removed" : "Blog liked",
+      liked: !alreadyLiked,
+      likesCount: blog.likes.length,
+    });
+  } catch (error) {
+    console.error("Toggle like error:", error);
+
+    return res.status(500).json({
+      error: "Failed to update like",
+      message: error.message,
     });
   }
 };

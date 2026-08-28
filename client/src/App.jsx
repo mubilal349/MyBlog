@@ -29,6 +29,7 @@ import Overview from "./pages/admin/Overview";
 import Posts from "./pages/admin/Posts";
 import UsersPage from "./pages/admin/Users";
 import Comments from "./pages/admin/Comments";
+import Settings from "./pages/admin/Settings";
 
 import Chatbot from "./components/Chatboat";
 
@@ -106,6 +107,9 @@ const Layout = () => {
 
             {/* /admin/comments */}
             <Route path="comments" element={<Comments />} />
+
+            {/* /admin/settings */}
+            <Route path="settings" element={<Settings />} />
           </Route>
 
           {/* ==========================================

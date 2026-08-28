@@ -1,4 +1,5 @@
 import React from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import {
   FileText,
   Users,
@@ -17,6 +18,7 @@ import {
 } from "lucide-react";
 
 const Overview = () => {
+  const navigate = useNavigate();
   const stats = [
     {
       title: "Total Posts",
@@ -185,7 +187,10 @@ const Overview = () => {
         </div>
 
         <div className="flex gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition cursor-pointer">
+          <button
+            onClick={() => navigate("/admin/posts")}
+            className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition cursor-pointer"
+          >
             <Plus size={18} />
             New Post
           </button>

@@ -1,6 +1,12 @@
 import express from "express";
 
-import { register, login, getProfile } from "../controllers/authController.js";
+import {
+  register,
+  login,
+  getProfile,
+  changePassword,
+  deleteAccount,
+} from "../controllers/authController.js";
 
 import { authenticateToken } from "../middleware/authMiddleware.js";
 
@@ -18,5 +24,14 @@ router.post("/login", login);
 
 // Get currently logged-in user
 router.get("/profile", authenticateToken, getProfile);
+
+// Change password
+router.patch("/change-password", authenticateToken, changePassword);
+
+// ==========================================
+// DELETE ACCOUNT
+// ==========================================
+
+router.delete("/delete-account", authenticateToken, deleteAccount);
 
 export default router;

@@ -6,12 +6,13 @@ import {
   Clock3,
   Grid2X2,
   Heart,
+  MessageCircle,
   Plane,
   Sparkles,
   Zap,
 } from "lucide-react";
 
-import { getPublishedBlogs } from "../services/blogServices.js";
+import { getPublishedBlogs, toggleBlogLike } from "../services/blogServices.js";
 
 const BLOGS_PER_LOAD = 6;
 
@@ -46,6 +47,7 @@ function formatDate(date) {
 
 const Blog = () => {
   const [blogs, setBlogs] = useState([]);
+  const [likingBlogId, setLikingBlogId] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("All");
 
   const [visibleCount, setVisibleCount] = useState(BLOGS_PER_LOAD);
@@ -55,6 +57,52 @@ const Blog = () => {
   const [error, setError] = useState("");
 
   const loadMoreRef = useRef(null);
+
+  // ==========================================
+  // LIKE / UNLIKE BLOG
+  // ==========================================
+
+  const handleLike = async (blogId) => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Please login to like this blog.");
+      return;
+    }
+
+    if (likingBlogId === blogId) {
+      return;
+    }
+
+    try {
+      setLikingBlogId(blogId);
+
+      const result = await toggleBlogLike(blogId);
+
+      console.log("Like response:", result);
+
+      setBlogs((previousBlogs) =>
+        previousBlogs.map((blog) =>
+          blog._id === blogId
+            ? {
+                ...blog,
+                likesCount: result.likesCount,
+              }
+            : blog,
+        ),
+      );
+    } catch (error) {
+      console.error("Like failed:", error);
+
+      alert(
+        error.response?.data?.error ||
+          error.message ||
+          "Failed to update like.",
+      );
+    } finally {
+      setLikingBlogId(null);
+    }
+  };
 
   // ==========================================
   // LOAD PUBLISHED BLOGS
@@ -424,6 +472,85 @@ const Blog = () => {
                       {blog.excerpt && (
                         <p className="blog-card-excerpt">{blog.excerpt}</p>
                       )}
+
+                      <div className="mt-5 flex items-center gap-3">
+                        {/* LIKES */}
+                        <button
+                          type="button"
+                          onClick={() => handleLike(blog._id)}
+                          disabled={likingBlogId === blog._id}
+                          className="
+    group
+    inline-flex
+    items-center
+    gap-2
+    rounded-full
+    border border-white/10
+    bg-white/[0.04]
+    px-3.5
+    py-2
+    text-white/70
+    transition-all
+    duration-300
+    hover:border-rose-400/30
+    hover:bg-rose-400/[0.08]
+    hover:text-rose-300
+    disabled:cursor-not-allowed
+    disabled:opacity-60
+  "
+                        >
+                          <Heart
+                            size={14}
+                            strokeWidth={1.8}
+                            className="
+      transition-all
+      duration-300
+      group-hover:scale-110
+      group-hover:fill-rose-400
+      group-hover:text-rose-400
+    "
+                          />
+
+                          <span className="text-xs font-semibold text-white/90">
+                            {Number(blog.likesCount ?? blog.likes?.length ?? 0)}
+                          </span>
+
+                          <span className="text-[10px] uppercase tracking-wider text-white/40">
+                            Likes
+                          </span>
+                        </button>
+
+                        {/* COMMENTS */}
+                        <Link
+                          to={`/blog/${blog.slug}`}
+                          className="
+    inline-flex
+    items-center
+    gap-2
+    rounded-full
+    border border-white/10
+    bg-white/[0.04]
+    px-3
+    py-2
+    text-white/70
+    transition-all
+    duration-300
+    hover:border-violet-400/30
+    hover:bg-violet-400/[0.08]
+    hover:text-violet-300
+  "
+                        >
+                          <MessageCircle size={14} strokeWidth={1.8} />
+
+                          <span className="text-xs font-semibold text-white/90">
+                            {Number(blog.commentsCount ?? 0)}
+                          </span>
+
+                          <span className="text-[10px] uppercase tracking-wider text-white/40">
+                            Comments
+                          </span>
+                        </Link>
+                      </div>
 
                       <div className="blog-card-footer">
                         <div className="blog-author">

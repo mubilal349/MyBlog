@@ -56,6 +56,12 @@ const blogSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    likes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
   },
   {
     timestamps: true,
