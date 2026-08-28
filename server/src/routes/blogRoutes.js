@@ -11,41 +11,43 @@ import {
   toggleLike,
 } from "../controllers/blogController.js";
 
-import {
-  authenticateToken,
-  requireAdmin,
-} from "../middleware/authMiddleware.js";
+import { authenticateToken } from "../middleware/authMiddleware.js";
+
+import { adminOnly, editorOrAdmin } from "../middleware/roleMiddleware.js";
 
 const router = express.Router();
 
 // ==========================================
-// ADMIN ROUTES
+// EDITOR + ADMIN
 // ==========================================
 
 // Get all blogs including Draft
-router.get("/admin/all", authenticateToken, requireAdmin, getAllBlogsAdmin);
+router.get("/admin/all", authenticateToken, editorOrAdmin, getAllBlogsAdmin);
 
 // Get admin blog by ID
-router.get("/admin/:id", authenticateToken, requireAdmin, getAdminBlogById);
+router.get("/admin/:id", authenticateToken, editorOrAdmin, getAdminBlogById);
 
-// Create
-router.post("/", authenticateToken, requireAdmin, createBlog);
+// Create blog
+router.post("/", authenticateToken, editorOrAdmin, createBlog);
 
-// Update
-router.put("/:id", authenticateToken, requireAdmin, updateBlog);
-
-// Delete
-router.delete("/:id", authenticateToken, requireAdmin, deleteBlog);
+// Update blog
+router.put("/:id", authenticateToken, editorOrAdmin, updateBlog);
 
 // ==========================================
-// LIKE ROUTE
+// ADMIN ONLY
 // ==========================================
 
-// Like / Unlike blog
+// Delete blog
+router.delete("/:id", authenticateToken, adminOnly, deleteBlog);
+
+// ==========================================
+// LIKE
+// ==========================================
+
 router.post("/:id/like", authenticateToken, toggleLike);
 
 // ==========================================
-// PUBLIC ROUTES
+// PUBLIC
 // ==========================================
 
 // Published blogs

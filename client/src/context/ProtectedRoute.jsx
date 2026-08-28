@@ -1,15 +1,16 @@
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 
-const ProtectedRoute = ({ children, requiredRole }) => {
+const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const { user, loading } = useAuth();
+  const location = useLocation();
 
   console.log("PROTECTED ROUTE:", {
     loading,
     user,
     role: user?.role,
-    requiredRole,
+    allowedRoles,
   });
 
   if (loading) {
@@ -21,16 +22,18 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   }
 
   if (!user) {
-    console.log("NO USER → LOGIN");
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  if (requiredRole && user.role !== requiredRole) {
-    console.log("WRONG ROLE:", user.role);
+  const userRole = user.role?.toLowerCase();
+
+  if (allowedRoles.length > 0 && !allowedRoles.includes(userRole)) {
+    console.log("WRONG ROLE:", userRole);
+
     return <Navigate to="/unauthorized" replace />;
   }
 
-  console.log("ACCESS GRANTED");
+  console.log("ACCESS GRANTED:", userRole);
 
   return children;
 };

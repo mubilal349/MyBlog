@@ -47,8 +47,11 @@ const Login = () => {
     if (result.success) {
       console.log("LOGIN RESULT:", result);
       console.log("USER ROLE:", result.user?.role);
-      if (result.user?.role === "admin") {
-        navigate("/admin");
+
+      const role = result.user?.role?.toLowerCase();
+
+      if (role === "admin" || role === "editor") {
+        navigate("/admin/overview");
       } else {
         navigate("/");
       }

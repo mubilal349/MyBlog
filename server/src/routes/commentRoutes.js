@@ -1,53 +1,58 @@
 import express from "express";
 
 import {
-  createComment,
-  getApprovedComments,
-  getAllComments,
-  approveComment,
-  rejectComment,
-  deleteComment,
-} from "../controllers/commentController.js";
+  createBlog,
+  getPublishedBlogs,
+  getBlogBySlug,
+  getAllBlogsAdmin,
+  getAdminBlogById,
+  updateBlog,
+  deleteBlog,
+  toggleLike,
+} from "../controllers/blogController.js";
 
 import { authenticateToken } from "../middleware/authMiddleware.js";
+import { adminOnly, editorOrAdmin } from "../middleware/roleMiddleware.js";
 
 const router = express.Router();
+
+// ==========================================
+// EDITOR + ADMIN
+// ==========================================
+
+// Get all blogs including Draft
+router.get("/admin/all", authenticateToken, editorOrAdmin, getAllBlogsAdmin);
+
+// Get blog by ID
+router.get("/admin/:id", authenticateToken, editorOrAdmin, getAdminBlogById);
+
+// Create blog
+router.post("/", authenticateToken, editorOrAdmin, createBlog);
+
+// Update blog
+router.put("/:id", authenticateToken, editorOrAdmin, updateBlog);
+
+// ==========================================
+// ADMIN ONLY
+// ==========================================
+
+// Delete blog
+router.delete("/:id", authenticateToken, adminOnly, deleteBlog);
+
+// ==========================================
+// LIKE
+// ==========================================
+
+router.post("/:id/like", authenticateToken, toggleLike);
 
 // ==========================================
 // PUBLIC
 // ==========================================
 
-// Get only approved comments for a blog
-// GET /api/comments/blog/:blogId
-router.get("/blog/:blogId", getApprovedComments);
+// Published blogs
+router.get("/", getPublishedBlogs);
 
-// ==========================================
-// AUTHENTICATED USER
-// ==========================================
-
-// Create comment
-// Automatically starts as "pending"
-// POST /api/comments
-router.post("/", authenticateToken, createComment);
-
-// ==========================================
-// ADMIN
-// ==========================================
-
-// Get all comments
-// GET /api/comments
-router.get("/", authenticateToken, getAllComments);
-
-// Approve comment
-// PATCH /api/comments/:id/approve
-router.patch("/:id/approve", authenticateToken, approveComment);
-
-// Reject comment
-// PATCH /api/comments/:id/reject
-router.patch("/:id/reject", authenticateToken, rejectComment);
-
-// Delete comment
-// DELETE /api/comments/:id
-router.delete("/:id", authenticateToken, deleteComment);
+// Single published blog
+router.get("/:slug", getBlogBySlug);
 
 export default router;

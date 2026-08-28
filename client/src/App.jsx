@@ -88,7 +88,7 @@ const Layout = () => {
           <Route
             path="/admin"
             element={
-              <ProtectedRoute requiredRole="admin">
+              <ProtectedRoute allowedRoles={["admin", "editor"]}>
                 <AdminDashboard />
               </ProtectedRoute>
             }

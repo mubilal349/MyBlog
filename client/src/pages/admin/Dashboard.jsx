@@ -16,6 +16,7 @@ import {
   X,
   Check,
   Settings,
+  ShieldCheck,
 } from "lucide-react";
 import "./adminDashboard.css";
 
@@ -54,16 +55,72 @@ const Stamp = ({ status }) => (
 // =========================
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
-  // const location = useLocation();
+  const location = useLocation();
+  const role = user?.role?.toLowerCase();
+
+  const isAdmin = role === "admin";
+  const isEditor = role === "editor";
+
   const { theme, toggleTheme } = useTheme();
 
   const menuItems = [
-    { name: "Overview", path: "overview", icon: Home },
-    { name: "Manage posts", path: "posts", icon: FileText },
-    { name: "Manage users", path: "users", icon: Users },
-    { name: "Manage comments", path: "comments", icon: MessageSquare },
-    { name: "Settings", path: "settings", icon: Settings },
+    {
+      name: "Overview",
+      path: "overview",
+      icon: Home,
+      roles: ["admin", "editor"],
+    },
+
+    {
+      name: "Manage posts",
+      path: "posts",
+      icon: FileText,
+      roles: ["admin", "editor"],
+    },
+
+    ...(isAdmin
+      ? [
+          {
+            name: "Manage users",
+            path: "users",
+            icon: Users,
+            roles: ["admin"],
+          },
+        ]
+      : []),
+
+    {
+      name: "Manage comments",
+      path: "comments",
+      icon: MessageSquare,
+      roles: ["admin", "editor"],
+    },
+
+    ...(isAdmin
+      ? [
+          {
+            name: "Settings",
+            path: "settings",
+            icon: Settings,
+            roles: ["admin"],
+          },
+        ]
+      : []),
   ];
+  const userRole = user?.role?.toLowerCase();
+
+  const visibleMenuItems = menuItems.filter((item) =>
+    item.roles?.includes(userRole),
+  );
+
+  // Only Admin gets user management
+  if (isAdmin) {
+    menuItems.splice(2, 0, {
+      name: "Manage users",
+      path: "users",
+      icon: Users,
+    });
+  }
 
   const initials = (name = "") =>
     name
@@ -76,30 +133,42 @@ const AdminDashboard = () => {
   return (
     <div className="admin-dashboard">
       <div className="app-shell">
-        {/* Sidebar */}
+        {/* ==========================================
+        SIDEBAR
+    ========================================== */}
+
         <aside className="sidebar">
+          {/* BRAND */}
           <div className="masthead">
-            <h1 className="serif ">The Desk</h1>
+            <h1 className="serif">The Desk</h1>
             <p>Blog control room</p>
           </div>
 
+          {/* CURRENT USER */}
           <div className="who">
             <div className="avatar serif">
               {initials(user?.username || "U")}
             </div>
+
             <div>
               <div className="who-name">{user?.username || "User"}</div>
-              <div className="who-role">{user?.role || "Editor"}</div>
+
+              <div className="who-role">{user?.role || "User"}</div>
             </div>
           </div>
 
+          {/* ==========================================
+          NAVIGATION
+      ========================================== */}
+
           <nav className="nav">
-            {menuItems.map((item) => {
-              const isActive = location.pathname.includes(item.path);
+            {visibleMenuItems.map((item) => {
+              const isActive = location.pathname === `/admin/${item.path}`;
+
               return (
                 <NavLink
                   key={item.name}
-                  to={item.path}
+                  to={`/admin/${item.path}`}
                   className={`nav-item ${isActive ? "active" : ""}`}
                 >
                   <item.icon size={16} />
@@ -109,25 +178,41 @@ const AdminDashboard = () => {
             })}
           </nav>
 
+          {/* ==========================================
+          SIDEBAR FOOTER
+      ========================================== */}
+
           <div className="sidebar-foot">
-            <button className="theme-toggle" onClick={toggleTheme}>
+            {/* THEME */}
+            <button
+              type="button"
+              className="theme-toggle"
+              onClick={toggleTheme}
+            >
               <span className="theme-toggle-label">
                 {theme === "dark" ? <Moon size={14} /> : <Sun size={14} />}
+
                 {theme === "dark" ? "Dark mode" : "Light mode"}
               </span>
+
               <span className="theme-track">
                 <span className="theme-dot" />
               </span>
             </button>
 
-            <button onClick={logout} className="logout-btn">
+            {/* LOGOUT */}
+            <button type="button" onClick={logout} className="logout-btn">
               <LogOut size={16} />
+
               <span>Log out</span>
             </button>
           </div>
         </aside>
 
-        {/* Main content */}
+        {/* ==========================================
+        MAIN CONTENT
+    ========================================== */}
+
         <main className="main-content">
           <Outlet />
         </main>

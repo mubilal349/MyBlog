@@ -1,24 +1,21 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   Lock,
-  Trash2,
-  ShieldCheck,
   Eye,
   EyeOff,
+  ShieldCheck,
+  Trash2,
   AlertTriangle,
   CheckCircle2,
-  Loader2,
   KeyRound,
-  UserX,
-  ArrowLeft,
+  User,
+  X,
+  Loader2,
 } from "lucide-react";
 
 import api from "../../services/api";
 
 const Settings = () => {
-  const navigate = useNavigate();
-
   // ==========================================
   // PASSWORD STATE
   // ==========================================
@@ -69,7 +66,7 @@ const Settings = () => {
     }
 
     if (currentPassword === newPassword) {
-      return "New password must be different from your current password.";
+      return "Your new password must be different from your current password.";
     }
 
     return "";
@@ -92,13 +89,6 @@ const Settings = () => {
       return;
     }
 
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      setPasswordError("Your session has expired. Please login again.");
-      return;
-    }
-
     try {
       setPasswordLoading(true);
 
@@ -108,15 +98,21 @@ const Settings = () => {
       });
 
       setPasswordSuccess(
-        response.data?.message ||
-          "Your password has been changed successfully.",
+        response.data?.message || "Password changed successfully.",
       );
 
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
+
+      setShowCurrentPassword(false);
+      setShowNewPassword(false);
+      setShowConfirmPassword(false);
     } catch (error) {
-      console.error("CHANGE PASSWORD ERROR:", error);
+      console.error(
+        "CHANGE PASSWORD ERROR:",
+        error.response?.data || error.message,
+      );
 
       setPasswordError(
         error.response?.data?.message ||
@@ -133,39 +129,23 @@ const Settings = () => {
   // ==========================================
 
   const handleDeleteAccount = async () => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      setDeleteError("Your session has expired. Please login again.");
-      return;
-    }
-
     try {
       setDeleteLoading(true);
       setDeleteError("");
 
-      const response = await api.delete("/auth/account");
+      await api.delete("/auth/account");
 
-      console.log("DELETE ACCOUNT RESPONSE:", response.data);
-
-      // Clear authentication
+      // Remove authentication information
       localStorage.removeItem("token");
       localStorage.removeItem("user");
 
-      // Close modal
-      setShowDeleteModal(false);
-
       // Redirect to login
-      navigate("/login", {
-        replace: true,
-        state: {
-          message:
-            response.data?.message ||
-            "Your account has been deleted successfully.",
-        },
-      });
+      window.location.href = "/login";
     } catch (error) {
-      console.error("DELETE ACCOUNT ERROR:", error);
+      console.error(
+        "DELETE ACCOUNT ERROR:",
+        error.response?.data || error.message,
+      );
 
       setDeleteError(
         error.response?.data?.message ||
@@ -184,21 +164,19 @@ const Settings = () => {
   const PasswordInput = ({
     label,
     value,
-    onChange,
+    setValue,
     visible,
     setVisible,
     placeholder,
     autoComplete,
   }) => {
     return (
-      <div>
-        <label className="mb-2 block text-sm font-medium text-[var(--ad-ink)]">
-          {label}
-        </label>
+      <div className="field">
+        <label>{label}</label>
 
         <div className="relative">
           <Lock
-            size={17}
+            size={16}
             className="
               absolute
               left-3
@@ -211,48 +189,31 @@ const Settings = () => {
           <input
             type={visible ? "text" : "password"}
             value={value}
-            onChange={onChange}
+            onChange={(event) => setValue(event.target.value)}
             placeholder={placeholder}
             autoComplete={autoComplete}
-            className="
-              w-full
-              rounded-lg
-              border border-[var(--ad-rule)]
-              bg-[var(--ad-surface-2)]
-              py-3
-              pl-10
-              pr-11
-              text-sm
-              text-[var(--ad-ink)]
-              placeholder:text-[var(--ad-ink-faint)]
-              focus:border-[var(--ad-accent)]
-              focus:outline-none
-              focus:ring-2
-              focus:ring-[var(--ad-accent-soft)]
-              transition-all
-              duration-200
-            "
+            className="!pl-10 !pr-11"
           />
 
           <button
             type="button"
-            onClick={() => setVisible(!visible)}
+            onClick={() => setVisible((prev) => !prev)}
             className="
               absolute
               right-2
               top-1/2
               -translate-y-1/2
-              rounded-md
-              p-1.5
+              rounded-lg
+              p-2
               text-[var(--ad-ink-faint)]
-              hover:bg-[var(--ad-surface)]
+              hover:bg-[var(--ad-surface-2)]
               hover:text-[var(--ad-ink)]
               transition-colors
               cursor-pointer
             "
             aria-label={visible ? "Hide password" : "Show password"}
           >
-            {visible ? <EyeOff size={17} /> : <Eye size={17} />}
+            {visible ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
         </div>
       </div>
@@ -260,84 +221,79 @@ const Settings = () => {
   };
 
   // ==========================================
-  // PAGE
+  // PASSWORD REQUIREMENT
   // ==========================================
+
+  const Requirement = ({ valid, children }) => {
+    return (
+      <div
+        className={`
+          flex
+          items-center
+          gap-2
+          text-xs
+          transition-colors
+          ${
+            valid
+              ? "text-green-600 dark:text-green-400"
+              : "text-[var(--ad-ink-faint)]"
+          }
+        `}
+      >
+        {valid ? <CheckCircle2 size={14} /> : <span>•</span>}
+        {children}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-8">
       {/* ==========================================
-          HEADER
-      ========================================== */}
+          PAGE HEADER
+          ========================================== */}
 
       <div>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="
-              flex
-              h-9
-              w-9
-              items-center
-              justify-center
-              rounded-lg
-              border border-[var(--ad-rule)]
-              bg-[var(--ad-surface)]
-              text-[var(--ad-ink-faint)]
-              hover:bg-[var(--ad-surface-2)]
-              hover:text-[var(--ad-ink)]
-              transition-colors
-              cursor-pointer
-            "
-            title="Go back"
-          >
-            <ArrowLeft size={17} />
-          </button>
+        <p className="eyebrow">Account</p>
 
-          <div>
-            <h2 className="text-2xl font-bold text-[var(--ad-ink)]">
-              Settings
-            </h2>
+        <h2 className="serif page-title">Settings</h2>
 
-            <p className="mt-1 text-sm text-[var(--ad-ink-faint)]">
-              Manage your account security and account settings.
-            </p>
-          </div>
-        </div>
+        <p className="mt-1 text-sm text-[var(--ad-ink-faint)]">
+          Manage your account security and personal settings.
+        </p>
       </div>
 
       {/* ==========================================
-          SECURITY CARD
-      ========================================== */}
+          ACCOUNT SECURITY
+          ========================================== */}
 
-      <div
+      <section
         className="
-          overflow-hidden
-          rounded-2xl
-          border border-[var(--ad-rule)]
           bg-[var(--ad-surface)]
+          border border-[var(--ad-rule)]
+          rounded-2xl
           shadow-sm
+          overflow-hidden
         "
       >
-        {/* CARD HEADER */}
+        {/* HEADER */}
 
         <div
           className="
-            border-b border-[var(--ad-rule)]
             p-6
+            border-b border-[var(--ad-rule)]
           "
         >
-          <div className="flex items-center gap-4">
+          <div className="flex items-start gap-4">
             <div
               className="
-                flex
-                h-11
-                w-11
-                items-center
-                justify-center
+                w-11 h-11
                 rounded-xl
                 bg-[var(--ad-accent-soft)]
                 text-[var(--ad-accent-ink)]
+                flex
+                items-center
+                justify-center
+                flex-shrink-0
               "
             >
               <ShieldCheck size={21} />
@@ -345,11 +301,11 @@ const Settings = () => {
 
             <div>
               <h3 className="text-lg font-bold text-[var(--ad-ink)]">
-                Security
+                Account security
               </h3>
 
-              <p className="mt-1 text-sm text-[var(--ad-ink-faint)]">
-                Protect your account by keeping your password up to date.
+              <p className="text-sm text-[var(--ad-ink-faint)] mt-1">
+                Keep your account secure by regularly updating your password.
               </p>
             </div>
           </div>
@@ -358,63 +314,62 @@ const Settings = () => {
         {/* PASSWORD FORM */}
 
         <form onSubmit={handleChangePassword} className="p-6">
-          <div className="mb-6 flex items-center gap-3">
+          <div className="flex items-center gap-3 mb-6">
             <div
               className="
-                flex
-                h-9
-                w-9
-                items-center
-                justify-center
+                w-9 h-9
                 rounded-lg
                 bg-[var(--ad-surface-2)]
-                text-[var(--ad-ink-faint)]
+                border border-[var(--ad-rule)]
+                flex
+                items-center
+                justify-center
               "
             >
-              <KeyRound size={18} />
+              <KeyRound size={17} className="text-[var(--ad-accent-ink)]" />
             </div>
 
             <div>
               <h4 className="font-semibold text-[var(--ad-ink)]">
-                Change Password
+                Change password
               </h4>
 
-              <p className="text-xs text-[var(--ad-ink-faint)]">
-                Use a strong password that you do not use elsewhere.
+              <p className="text-xs text-[var(--ad-ink-faint)] mt-0.5">
+                Choose a strong password that you don't use elsewhere.
               </p>
             </div>
           </div>
 
-          {/* CURRENT PASSWORD */}
-
           <div className="grid gap-5">
+            {/* CURRENT PASSWORD */}
+
             <PasswordInput
-              label="Current Password"
+              label="Current password"
               value={currentPassword}
-              onChange={(event) => setCurrentPassword(event.target.value)}
+              setValue={setCurrentPassword}
               visible={showCurrentPassword}
               setVisible={setShowCurrentPassword}
               placeholder="Enter your current password"
               autoComplete="current-password"
             />
 
-            {/* NEW + CONFIRM */}
+            {/* NEW PASSWORDS */}
 
             <div className="grid gap-5 md:grid-cols-2">
               <PasswordInput
-                label="New Password"
+                label="New password"
                 value={newPassword}
-                onChange={(event) => setNewPassword(event.target.value)}
+                setValue={setNewPassword}
                 visible={showNewPassword}
                 setVisible={setShowNewPassword}
-                placeholder="Enter your new password"
+                placeholder="Enter a new password"
                 autoComplete="new-password"
               />
 
               <PasswordInput
-                label="Confirm New Password"
+                label="Confirm new password"
                 value={confirmPassword}
-                onChange={(event) => setConfirmPassword(event.target.value)}
+                setValue={setConfirmPassword}
                 visible={showConfirmPassword}
                 setVisible={setShowConfirmPassword}
                 placeholder="Confirm your new password"
@@ -422,7 +377,7 @@ const Settings = () => {
               />
             </div>
 
-            {/* PASSWORD REQUIREMENTS */}
+            {/* REQUIREMENTS */}
 
             <div
               className="
@@ -432,42 +387,41 @@ const Settings = () => {
                 p-4
               "
             >
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[var(--ad-ink-faint)]">
+              <p
+                className="
+                  text-xs
+                  font-semibold
+                  uppercase
+                  tracking-wider
+                  text-[var(--ad-ink-faint)]
+                  mb-3
+                "
+              >
                 Password requirements
               </p>
 
-              <div className="grid gap-2 text-sm md:grid-cols-2">
-                <div
-                  className={
-                    newPassword.length >= 6
-                      ? "text-green-600 dark:text-green-400"
-                      : "text-[var(--ad-ink-faint)]"
-                  }
-                >
-                  {newPassword.length >= 6 ? "✓" : "○"} At least 6 characters
-                </div>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Requirement valid={newPassword.length >= 6}>
+                  At least 6 characters
+                </Requirement>
 
-                <div
-                  className={
-                    newPassword && newPassword === confirmPassword
-                      ? "text-green-600 dark:text-green-400"
-                      : "text-[var(--ad-ink-faint)]"
+                <Requirement
+                  valid={
+                    newPassword.length > 0 && newPassword === confirmPassword
                   }
                 >
-                  {newPassword && newPassword === confirmPassword ? "✓" : "○"}{" "}
-                  Passwords must match
-                </div>
+                  Passwords match
+                </Requirement>
 
-                <div
-                  className={
-                    newPassword && currentPassword !== newPassword
-                      ? "text-green-600 dark:text-green-400"
-                      : "text-[var(--ad-ink-faint)]"
+                <Requirement
+                  valid={
+                    currentPassword.length > 0 &&
+                    newPassword.length > 0 &&
+                    currentPassword !== newPassword
                   }
                 >
-                  {newPassword && currentPassword !== newPassword ? "✓" : "○"}{" "}
                   Different from current password
-                </div>
+                </Requirement>
               </div>
             </div>
 
@@ -479,21 +433,20 @@ const Settings = () => {
                   flex
                   items-start
                   gap-3
-                  rounded-lg
-                  border
-                  border-red-200
+                  rounded-xl
+                  border border-red-200
                   bg-red-50
-                  px-4
-                  py-3
+                  px-4 py-3
+                  text-sm
                   text-red-700
-                  dark:border-red-900
                   dark:bg-red-950/30
+                  dark:border-red-900
                   dark:text-red-400
                 "
               >
-                <AlertTriangle size={17} className="mt-0.5 shrink-0" />
+                <AlertTriangle size={17} className="mt-0.5 flex-shrink-0" />
 
-                <span className="text-sm">{passwordError}</span>
+                <span>{passwordError}</span>
               </div>
             )}
 
@@ -505,25 +458,24 @@ const Settings = () => {
                   flex
                   items-start
                   gap-3
-                  rounded-lg
-                  border
-                  border-green-200
+                  rounded-xl
+                  border border-green-200
                   bg-green-50
-                  px-4
-                  py-3
+                  px-4 py-3
+                  text-sm
                   text-green-700
-                  dark:border-green-900
                   dark:bg-green-950/30
+                  dark:border-green-900
                   dark:text-green-400
                 "
               >
-                <CheckCircle2 size={17} className="mt-0.5 shrink-0" />
+                <CheckCircle2 size={17} className="mt-0.5 flex-shrink-0" />
 
-                <span className="text-sm">{passwordSuccess}</span>
+                <span>{passwordSuccess}</span>
               </div>
             )}
 
-            {/* SUBMIT */}
+            {/* FOOTER */}
 
             <div
               className="
@@ -537,175 +489,227 @@ const Settings = () => {
                 type="submit"
                 disabled={passwordLoading}
                 className="
-                  flex
-                  w-full
+                  btn-primary
+                  inline-flex
                   items-center
                   justify-center
                   gap-2
-                  rounded-lg
-                  bg-[var(--ad-accent)]
-                  px-5
-                  py-2.5
-                  text-sm
-                  font-medium
-                  text-white
-                  hover:opacity-90
-                  disabled:cursor-not-allowed
                   disabled:opacity-50
-                  transition-all
-                  duration-200
-                  cursor-pointer
-                  md:w-auto
+                  disabled:cursor-not-allowed
                 "
               >
                 {passwordLoading ? (
                   <>
-                    <Loader2 size={16} className="animate-spin" />
+                    <Loader2 size={15} className="animate-spin" />
                     Updating...
                   </>
                 ) : (
                   <>
-                    <Lock size={16} />
-                    Change Password
+                    <Lock size={15} />
+                    Change password
                   </>
                 )}
               </button>
             </div>
           </div>
         </form>
-      </div>
+      </section>
+
+      {/* ==========================================
+          ACCOUNT INFORMATION
+          ========================================== */}
+
+      <section
+        className="
+          bg-[var(--ad-surface)]
+          border border-[var(--ad-rule)]
+          rounded-2xl
+          shadow-sm
+          overflow-hidden
+        "
+      >
+        <div className="p-6 border-b border-[var(--ad-rule)]">
+          <div className="flex items-center gap-3">
+            <div
+              className="
+                w-10 h-10
+                rounded-xl
+                bg-[var(--ad-accent-soft)]
+                flex
+                items-center
+                justify-center
+                text-[var(--ad-accent-ink)]
+              "
+            >
+              <User size={18} />
+            </div>
+
+            <div>
+              <h3 className="text-lg font-bold text-[var(--ad-ink)]">
+                Account information
+              </h3>
+
+              <p className="text-sm text-[var(--ad-ink-faint)] mt-1">
+                Your account details and authentication information.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6">
+          <div
+            className="
+              rounded-xl
+              border border-[var(--ad-rule)]
+              bg-[var(--ad-surface-2)]
+              p-4
+            "
+          >
+            <div className="flex items-start gap-3">
+              <ShieldCheck
+                size={18}
+                className="mt-0.5 text-[var(--ad-accent-ink)]"
+              />
+
+              <div>
+                <p className="font-medium text-[var(--ad-ink)]">
+                  Account security
+                </p>
+
+                <p className="text-sm text-[var(--ad-ink-faint)] mt-1">
+                  Your password is securely hashed on the server and is never
+                  displayed in your account settings.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ==========================================
           DANGER ZONE
-      ========================================== */}
+          ========================================== */}
 
-      <div
+      <section
         className="
-          overflow-hidden
-          rounded-2xl
-          border border-red-200
           bg-[var(--ad-surface)]
-          shadow-sm
+          border border-red-200
           dark:border-red-900
+          rounded-2xl
+          shadow-sm
+          overflow-hidden
         "
       >
         {/* HEADER */}
 
         <div
           className="
-            border-b
-            border-red-100
-            bg-red-50
             p-6
-            dark:border-red-900/50
+            border-b
+            border-red-200
+            dark:border-red-900
+            bg-red-50
             dark:bg-red-950/20
           "
         >
-          <div className="flex items-center gap-4">
+          <div className="flex items-start gap-4">
             <div
               className="
-                flex
-                h-11
-                w-11
-                items-center
-                justify-center
+                w-11 h-11
                 rounded-xl
                 bg-red-100
-                text-red-600
                 dark:bg-red-950/50
+                text-red-600
                 dark:text-red-400
+                flex
+                items-center
+                justify-center
+                flex-shrink-0
               "
             >
-              <UserX size={21} />
+              <Trash2 size={20} />
             </div>
 
             <div>
-              <h3 className="text-lg font-bold text-red-700 dark:text-red-400">
-                Danger Zone
+              <h3
+                className="
+                  text-lg
+                  font-bold
+                  text-red-700
+                  dark:text-red-400
+                "
+              >
+                Danger zone
               </h3>
 
-              <p className="mt-1 text-sm text-red-600/70 dark:text-red-400/60">
-                Permanent account actions.
+              <p className="text-sm text-red-600/70 dark:text-red-400/60 mt-1">
+                Permanent account actions. Proceed carefully.
               </p>
             </div>
           </div>
         </div>
 
-        {/* DELETE */}
+        {/* DELETE ACCOUNT */}
 
-        <div className="flex flex-col gap-5 p-6 md:flex-row md:items-center md:justify-between">
-          <div className="max-w-xl">
-            <h4 className="font-semibold text-[var(--ad-ink)]">
-              Delete Account
-            </h4>
-
-            <p className="mt-1.5 text-sm leading-6 text-[var(--ad-ink-faint)]">
-              Permanently delete your account and associated data. This action
-              cannot be undone.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => {
-              setDeleteError("");
-              setShowDeleteModal(true);
-            }}
-            className="
-              flex
-              w-full
-              shrink-0
-              items-center
-              justify-center
-              gap-2
-              rounded-lg
-              border
-              border-red-200
-              bg-red-50
-              px-5
-              py-2.5
-              text-sm
-              font-medium
-              text-red-600
-              hover:bg-red-100
-              dark:border-red-900
-              dark:bg-red-950/30
-              dark:text-red-400
-              dark:hover:bg-red-950/50
-              transition-colors
-              cursor-pointer
-              md:w-auto
-            "
-          >
-            <Trash2 size={16} />
-            Delete Account
-          </button>
-        </div>
-
-        {/* DELETE ERROR */}
-
-        {deleteError && (
+        <div className="p-6">
           <div
             className="
-              border-t
-              border-red-100
-              px-6
-              py-4
-              dark:border-red-900
+              flex
+              flex-col
+              gap-5
+              md:flex-row
+              md:items-center
+              md:justify-between
             "
           >
-            <div className="flex items-start gap-3 text-sm text-red-600 dark:text-red-400">
-              <AlertTriangle size={17} className="mt-0.5 shrink-0" />
+            <div className="max-w-2xl">
+              <h4 className="font-semibold text-[var(--ad-ink)]">
+                Delete your account
+              </h4>
 
-              <span>{deleteError}</span>
+              <p className="text-sm text-[var(--ad-ink-faint)] mt-1.5 leading-6">
+                Permanently delete your account and associated data. This action
+                cannot be undone.
+              </p>
             </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setDeleteError("");
+                setShowDeleteModal(true);
+              }}
+              className="
+                inline-flex
+                items-center
+                justify-center
+                gap-2
+                rounded-lg
+                px-4 py-2.5
+                bg-red-50
+                text-red-600
+                border border-red-200
+                hover:bg-red-100
+                dark:bg-red-950/40
+                dark:text-red-400
+                dark:border-red-900
+                dark:hover:bg-red-950/70
+                transition-colors
+                duration-200
+                cursor-pointer
+                flex-shrink-0
+              "
+            >
+              <Trash2 size={16} />
+              Delete account
+            </button>
           </div>
-        )}
-      </div>
+        </div>
+      </section>
 
       {/* ==========================================
           DELETE MODAL
-      ========================================== */}
+          ========================================== */}
 
       {showDeleteModal && (
         <div
@@ -717,14 +721,12 @@ const Settings = () => {
             items-center
             justify-center
             bg-black/60
-            px-4
             backdrop-blur-sm
+            p-4
           "
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              if (!deleteLoading) {
-                setShowDeleteModal(false);
-              }
+          onClick={(event) => {
+            if (event.target === event.currentTarget && !deleteLoading) {
+              setShowDeleteModal(false);
             }
           }}
         >
@@ -732,71 +734,114 @@ const Settings = () => {
             className="
               w-full
               max-w-md
-              overflow-hidden
               rounded-2xl
-              border border-[var(--ad-rule)]
               bg-[var(--ad-surface)]
+              border border-[var(--ad-rule)]
               shadow-2xl
+              overflow-hidden
             "
           >
             {/* MODAL HEADER */}
 
             <div
               className="
-                border-b
-                border-[var(--ad-rule)]
                 p-6
+                border-b border-[var(--ad-rule)]
               "
             >
-              <div className="flex items-start gap-4">
-                <div
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div
+                    className="
+                      w-10 h-10
+                      rounded-xl
+                      bg-red-100
+                      dark:bg-red-950/50
+                      text-red-600
+                      dark:text-red-400
+                      flex
+                      items-center
+                      justify-center
+                    "
+                  >
+                    <AlertTriangle size={19} />
+                  </div>
+
+                  <div>
+                    <h3 className="font-bold text-[var(--ad-ink)]">
+                      Delete account?
+                    </h3>
+
+                    <p className="text-xs text-[var(--ad-ink-faint)] mt-1">
+                      This action cannot be undone.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={deleteLoading}
                   className="
-                    flex
-                    h-11
-                    w-11
-                    shrink-0
-                    items-center
-                    justify-center
-                    rounded-xl
-                    bg-red-100
-                    text-red-600
-                    dark:bg-red-950/40
-                    dark:text-red-400
+                    p-2
+                    rounded-lg
+                    text-[var(--ad-ink-faint)]
+                    hover:bg-[var(--ad-surface-2)]
+                    hover:text-[var(--ad-ink)]
+                    transition-colors
+                    cursor-pointer
                   "
                 >
-                  <AlertTriangle size={21} />
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-bold text-[var(--ad-ink)]">
-                    Delete your account?
-                  </h3>
-
-                  <p className="mt-1 text-sm text-[var(--ad-ink-faint)]">
-                    This action is permanent and cannot be reversed.
-                  </p>
-                </div>
+                  <X size={17} />
+                </button>
               </div>
             </div>
 
             {/* MODAL BODY */}
 
             <div className="p-6">
+              <p className="text-sm leading-6 text-[var(--ad-ink-soft)]">
+                Are you absolutely sure you want to delete your account? All
+                account-related information will be permanently removed.
+              </p>
+
               <div
                 className="
+                  mt-4
                   rounded-xl
                   border border-red-200
                   bg-red-50
-                  p-4
+                  dark:bg-red-950/30
                   dark:border-red-900
-                  dark:bg-red-950/20
+                  px-4 py-3
                 "
               >
-                <p className="text-sm leading-6 text-red-700 dark:text-red-400">
-                  Deleting your account will permanently remove your account and
-                  associated data. You will be logged out immediately.
-                </p>
+                <div className="flex items-start gap-2">
+                  <AlertTriangle
+                    size={16}
+                    className="
+                      mt-0.5
+                      text-red-600
+                      dark:text-red-400
+                      flex-shrink-0
+                    "
+                  />
+
+                  <p
+                    className="
+                      text-xs
+                      leading-5
+                      text-red-700
+                      dark:text-red-400
+                    "
+                  >
+                    This operation is permanent. You will be logged out
+                    immediately after your account is deleted.
+                  </p>
+                </div>
               </div>
+
+              {/* ERROR */}
 
               {deleteError && (
                 <div
@@ -805,12 +850,11 @@ const Settings = () => {
                     rounded-lg
                     border border-red-200
                     bg-red-50
-                    px-4
-                    py-3
+                    dark:bg-red-950/30
+                    dark:border-red-900
+                    px-4 py-3
                     text-sm
                     text-red-700
-                    dark:border-red-900
-                    dark:bg-red-950/30
                     dark:text-red-400
                   "
                 >
@@ -826,11 +870,10 @@ const Settings = () => {
                 flex
                 flex-col-reverse
                 gap-3
-                border-t
-                border-[var(--ad-rule)]
-                p-5
                 sm:flex-row
                 sm:justify-end
+                p-6
+                border-t border-[var(--ad-rule)]
               "
             >
               <button
@@ -838,21 +881,10 @@ const Settings = () => {
                 onClick={() => setShowDeleteModal(false)}
                 disabled={deleteLoading}
                 className="
+                  btn-ghost
                   w-full
-                  rounded-lg
-                  border
-                  border-[var(--ad-rule)]
-                  bg-[var(--ad-surface-2)]
-                  px-5
-                  py-2.5
-                  text-sm
-                  font-medium
-                  text-[var(--ad-ink-soft)]
-                  hover:bg-[var(--ad-surface)]
-                  disabled:opacity-50
-                  transition-colors
-                  cursor-pointer
                   sm:w-auto
+                  disabled:opacity-50
                 "
               >
                 Cancel
@@ -863,23 +895,21 @@ const Settings = () => {
                 onClick={handleDeleteAccount}
                 disabled={deleteLoading}
                 className="
-                  flex
-                  w-full
+                  inline-flex
                   items-center
                   justify-center
                   gap-2
                   rounded-lg
+                  px-4 py-2.5
                   bg-red-600
-                  px-5
-                  py-2.5
-                  text-sm
-                  font-medium
                   text-white
                   hover:bg-red-700
-                  disabled:cursor-not-allowed
-                  disabled:opacity-50
                   transition-colors
+                  duration-200
                   cursor-pointer
+                  disabled:opacity-50
+                  disabled:cursor-not-allowed
+                  w-full
                   sm:w-auto
                 "
               >
@@ -891,7 +921,7 @@ const Settings = () => {
                 ) : (
                   <>
                     <Trash2 size={16} />
-                    Yes, Delete Account
+                    Yes, delete account
                   </>
                 )}
               </button>
