@@ -96,16 +96,12 @@ const AdminDashboard = () => {
       roles: ["admin", "editor"],
     },
 
-    ...(isAdmin
-      ? [
-          {
-            name: "Settings",
-            path: "settings",
-            icon: Settings,
-            roles: ["admin"],
-          },
-        ]
-      : []),
+    {
+      name: "Settings",
+      path: "settings",
+      icon: Settings,
+      roles: ["admin", "editor"],
+    },
   ];
   const userRole = user?.role?.toLowerCase();
 
